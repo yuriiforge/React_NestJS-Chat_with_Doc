@@ -56,14 +56,24 @@ export class LlmService {
     return response.message.content;
   }
 
-  async *chatStream(messages: ChatMessage[]): AsyncGenerator<string> {
+  async *chatStream(
+    messages: ChatMessage[],
+    signal?: AbortSignal,
+  ): AsyncGenerator<string> {
     const stream = await this.ollama.chat({
       model: this.chatModel,
       messages,
       stream: true,
     });
-    for await (const part of stream) {
-      if (part.message.content) yield part.message.content;
+    // Stop generation in Ollama when the caller goes away.
+    const abort = () => stream.abort();
+    signal?.addEventListener('abort', abort, { once: true });
+    try {
+      for await (const part of stream) {
+        if (part.message.content) yield part.message.content;
+      }
+    } finally {
+      signal?.removeEventListener('abort', abort);
     }
   }
 }

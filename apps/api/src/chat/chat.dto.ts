@@ -32,3 +32,10 @@ export interface ChatResponse {
   answer: string;
   sources: ChatSource[];
 }
+
+/** Events of POST /chat/stream, sent as SSE `event: <type>` + JSON `data`. */
+export type ChatStreamEvent =
+  | { type: 'sources'; sources: ChatSource[] }
+  | { type: 'token'; text: string }
+  | { type: 'done' }
+  | { type: 'error'; message: string };

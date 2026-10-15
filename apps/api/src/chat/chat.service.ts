@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LlmService } from '../llm/llm.service.js';
 import { RetrievalService } from '../retrieval/retrieval.service.js';
-import type { ChatRequest, ChatResponse, ChatSource } from './chat.dto.js';
+import type {
+  ChatRequest,
+  ChatResponse,
+  ChatSource,
+  ChatStreamEvent,
+} from './chat.dto.js';
 import { buildMessages, NO_CONTEXT_ANSWER } from './prompt.js';
 
 @Injectable()
@@ -33,6 +38,24 @@ export class ChatService {
       buildMessages(question, sources, history),
     );
     return { answer, sources };
+  }
+
+  async *askStream(
+    { question, history, documentIds }: ChatRequest,
+    signal?: AbortSignal,
+  ): AsyncGenerator<ChatStreamEvent> {
+    const sources = await this.retrieve(question, documentIds);
+    yield { type: 'sources', sources };
+
+    if (sources.length === 0) {
+      yield { type: 'token', text: NO_CONTEXT_ANSWER };
+    } else {
+      const messages = buildMessages(question, sources, history);
+      for await (const text of this.llm.chatStream(messages, signal)) {
+        yield { type: 'token', text };
+      }
+    }
+    yield { type: 'done' };
   }
 
   private async retrieve(

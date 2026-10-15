@@ -16,18 +16,63 @@ const chunk = (score: number, page: number): RetrievedChunk => ({
   score,
 });
 
+const collect = async <T>(gen: AsyncIterable<T>): Promise<T[]> => {
+  const out: T[] = [];
+  for await (const item of gen) out.push(item);
+  return out;
+};
+
 describe('ChatService', () => {
   const search = vi.fn();
   const chat = vi.fn();
+  const chatStream = vi.fn();
   const service = new ChatService(
     { search } as unknown as RetrievalService,
-    { chat } as unknown as LlmService,
+    { chat, chatStream } as unknown as LlmService,
     new ConfigService({ RAG_TOP_K: 3, RAG_MIN_SCORE: 0.5 }),
   );
 
   beforeEach(() => {
     search.mockReset();
     chat.mockReset();
+    chatStream.mockReset();
+  });
+
+  it('streams sources, then tokens, then done', async () => {
+    search.mockResolvedValue([chunk(0.8, 2)]);
+    chatStream.mockImplementation(async function* () {
+      yield 'Report ';
+      yield 'it [1].';
+    });
+    const signal = new AbortController().signal;
+
+    const events = await collect(
+      service.askStream({ question: 'lost badge?', history: [] }, signal),
+    );
+
+    expect(events.map((e) => e.type)).toEqual([
+      'sources',
+      'token',
+      'token',
+      'done',
+    ]);
+    expect(events[1]).toEqual({ type: 'token', text: 'Report ' });
+    expect(chatStream.mock.calls[0][1]).toBe(signal);
+  });
+
+  it('streams the no-context answer without calling the LLM', async () => {
+    search.mockResolvedValue([]);
+
+    const events = await collect(
+      service.askStream({ question: 'capital?', history: [] }),
+    );
+
+    expect(events).toEqual([
+      { type: 'sources', sources: [] },
+      { type: 'token', text: NO_CONTEXT_ANSWER },
+      { type: 'done' },
+    ]);
+    expect(chatStream).not.toHaveBeenCalled();
   });
 
   it('answers from relevant chunks and returns numbered sources', async () => {
