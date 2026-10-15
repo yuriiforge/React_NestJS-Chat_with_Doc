@@ -4,6 +4,7 @@ import { AppController } from './app.controller.js';
 import { DatabaseModule } from './database/database.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { LlmModule } from './llm/llm.module.js';
+import { RetrievalModule } from './retrieval/retrieval.module.js';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { LlmModule } from './llm/llm.module.js';
     DatabaseModule,
     LlmModule,
     DocumentsModule,
+    RetrievalModule,
   ],
   controllers: [AppController],
 })
