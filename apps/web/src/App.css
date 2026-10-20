@@ -1,0 +1,25 @@
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: 100dvh;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .layout > .docs {
+    max-height: 40dvh;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+}
