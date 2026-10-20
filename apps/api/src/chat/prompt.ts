@@ -6,7 +6,7 @@ export const NO_CONTEXT_ANSWER =
 
 const SYSTEM_PROMPT = `You are an assistant that answers questions about the user's documents.
 Rules:
-- Answer ONLY using the numbered context passages provided with the question.
+- Answer ONLY using the numbered context passages below.
 - Cite the passages you used with their numbers in square brackets, e.g. [1] or [2][3].
 - If the context does not contain the answer, say you don't know based on the documents. Never make up facts.
 - Be concise and answer in the same language as the question.`;
@@ -28,9 +28,15 @@ export function buildMessages(
     })
     .join('\n\n');
 
+  // Context goes in the system message and the question stays on its own:
+  // with history present, llama3.2:3b wrongly answered "I don't know" in
+  // 3/8 runs when the context was glued to the question, 0/8 this way.
   return [
-    { role: 'system', content: SYSTEM_PROMPT },
+    {
+      role: 'system',
+      content: `${SYSTEM_PROMPT}\n\nContext passages for the latest question:\n${context}`,
+    },
     ...history.slice(-MAX_HISTORY_MESSAGES),
-    { role: 'user', content: `Context:\n${context}\n\nQuestion: ${question}` },
+    { role: 'user', content: question },
   ];
 }

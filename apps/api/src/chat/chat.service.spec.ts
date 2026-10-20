@@ -90,9 +90,12 @@ describe('ChatService', () => {
       [1, 2],
       [2, 1],
     ]);
-    const prompt = chat.mock.calls[0][0].at(-1).content as string;
-    expect(prompt).toContain('[1] (handbook.pdf, page 2)\ncontent of page 2');
-    expect(prompt).not.toContain('page 3');
+    const [system, ...rest] = chat.mock.calls[0][0];
+    expect(system.content).toContain(
+      '[1] (handbook.pdf, page 2)\ncontent of page 2',
+    );
+    expect(system.content).not.toContain('page 3');
+    expect(rest.at(-1)).toEqual({ role: 'user', content: 'lost badge?' });
   });
 
   it('skips the LLM when nothing relevant is found', async () => {
