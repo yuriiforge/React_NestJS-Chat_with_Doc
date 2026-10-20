@@ -123,7 +123,8 @@ export function DocumentsPanel({
             <span className="doc__body" title={doc.name}>
               <span className="doc__name">{doc.name}</span>
               <span className="muted">
-                {formatSize(doc.sizeBytes)} · {doc.chunkCount} chunks
+                {formatSize(doc.sizeBytes)} · {doc.chunkCount}{' '}
+                {doc.chunkCount === 1 ? 'chunk' : 'chunks'}
               </span>
             </span>
             <button

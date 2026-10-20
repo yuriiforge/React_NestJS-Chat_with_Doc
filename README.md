@@ -29,6 +29,20 @@ pnpm dev          # api on :3000, web on :5173
 
 `pnpm db:reset` wipes the database volume and recreates the schema.
 
+Open http://localhost:5173, drop a document into the sidebar and ask away.
+
+## Frontend
+
+- **Documents sidebar**: drag-and-drop or click to upload, list with size and chunk count,
+  delete, and checkboxes to limit questions to selected documents.
+- **Chat**: answers stream in token by token, with a Stop button. Enter sends, Shift+Enter adds
+  a new line. Earlier turns are sent as history, so follow-up questions work.
+- **Citations**: `[n]` markers become clickable chips; each answer lists its sources, and clicking
+  one shows the exact passage with document, page and match score.
+
+In development Vite proxies `/api` to `http://localhost:3000` (override with `API_URL`), so the
+backend needs no CORS setup.
+
 ## Configuration (`apps/api/.env`)
 
 | Variable             | Default            | Notes                                                 |
@@ -78,4 +92,5 @@ curl -N localhost:3000/api/chat/stream -H 'content-type: application/json' \
 ```sh
 pnpm --filter @chat/api test       # unit tests
 pnpm --filter @chat/api test:e2e   # needs the database and Ollama running
+pnpm --filter @chat/web test       # web unit tests (SSE parser, citations)
 ```
