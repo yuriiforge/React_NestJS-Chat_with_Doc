@@ -74,6 +74,35 @@ button:disabled {
 
 /* Shared bits */
 
+.button {
+  flex: none;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.button:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+.button--secondary {
+  height: 36px;
+  padding: 0 14px;
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.button--secondary:not(:disabled):hover {
+  filter: none;
+  background: var(--surface-2);
+}
+
 .muted {
   color: var(--text-muted);
 }
