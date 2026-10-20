@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Message } from '../hooks/useChat'
+import { AssistantAnswer } from './AssistantAnswer'
 import { Composer } from './Composer'
 import './ChatView.css'
 
@@ -99,6 +100,12 @@ function MessageBubble({ message }: { message: Message }) {
             <span />
             <span />
           </span>
+        ) : message.role === 'assistant' ? (
+          <AssistantAnswer
+            content={message.content}
+            sources={message.sources ?? []}
+            streaming={message.status === 'streaming'}
+          />
         ) : (
           <p className="message__text">{message.content}</p>
         )}
